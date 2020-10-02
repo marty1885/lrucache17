@@ -1,43 +1,13 @@
-/*
- * LRUCache11 - a templated C++11 based LRU cache class that allows
- * specification of
- * key, value and optionally the map container type (defaults to
- * std::unordered_map)
- * By using the std::unordered_map and a linked list of keys it allows O(1) insert, delete
- * and
- * refresh operations.
- *
- * This is a header-only library and all you need is the LRUCache11.hpp file
- *
- * Github: https://github.com/mohaps/lrucache11
- *
- * This is a follow-up to the LRUCache project -
- * https://github.com/mohaps/lrucache
- *
- * Copyright (c) 2012-22 SAURAV MOHAPATRA <mohaps@gmail.com>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
 #pragma once
 #include <algorithm>
 #include <cstdint>
 #include <list>
-#include <mutex>
+#include <shared_mutex>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
 
-namespace lru11 {
+namespace lru17 {
 /*
  * a noop lockable concept that can be used in place of std::mutex
  */
@@ -46,6 +16,8 @@ class NullLock {
   void lock() {}
   void unlock() {}
   bool try_lock() { return true; }
+  void lock_shared() {}
+  void unlock_shared() {}
 };
 
 /**
@@ -86,7 +58,8 @@ class Cache {
   typedef std::list<KeyValuePair<Key, Value>> list_type;
   typedef Map map_type;
   typedef Lock lock_type;
-  using Guard = std::lock_guard<lock_type>;
+  using ReadGuard = std::shared_lock<lock_type>;
+  using WriteGuard = std::unique_lock<lock_type>;
   /**
    * the maxSize is the soft limit of keys and (maxSize + elasticity) is the
    * hard limit
@@ -100,20 +73,20 @@ class Cache {
       : maxSize_(maxSize), elasticity_(elasticity) {}
   virtual ~Cache() = default;
   size_t size() const {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     return cache_.size();
   }
   bool empty() const {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     return cache_.empty();
   }
   void clear() {
-    Guard g(lock_);
+    WriteGuard l(lock_);
     cache_.clear();
     keys_.clear();
   }
   void insert(const Key& k, Value v) {
-    Guard g(lock_);
+    WriteGuard l(lock_);
     const auto iter = cache_.find(k);
     if (iter != cache_.end()) {
       iter->second->value = v;
@@ -126,7 +99,7 @@ class Cache {
     prune();
   }
   bool tryGet(const Key& kIn, Value& vOut) {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     const auto iter = cache_.find(kIn);
     if (iter == cache_.end()) {
       return false;
@@ -140,7 +113,7 @@ class Cache {
    *    guaranteed to be valid till the next insert/delete
    */
   const Value& get(const Key& k) {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     const auto iter = cache_.find(k);
     if (iter == cache_.end()) {
       throw KeyNotFound();
@@ -155,7 +128,7 @@ class Cache {
    return get(k);
   }
   bool remove(const Key& k) {
-    Guard g(lock_);
+    WriteGuard g(lock_);
     auto iter = cache_.find(k);
     if (iter == cache_.end()) {
       return false;
@@ -165,7 +138,7 @@ class Cache {
     return true;
   }
   bool contains(const Key& k) const {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     return cache_.find(k) != cache_.end();
   }
 
@@ -174,7 +147,7 @@ class Cache {
   size_t getMaxAllowedSize() const { return maxSize_ + elasticity_; }
   template <typename F>
   void cwalk(F& f) const {
-    Guard g(lock_);
+    ReadGuard g(lock_);
     std::for_each(keys_.begin(), keys_.end(), f);
   }
 

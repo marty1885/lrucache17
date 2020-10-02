@@ -1,9 +1,9 @@
-LRUCache11
+LRUCache17
 ==========
 
-A header only C++11 LRU Cache template class that allows you to define key, value and optionally the Map type. uses a double linked list and a ```std::unordered_map``` style container to provide fast insert, delete and update
+A header only C++17 LRU Cache template class that allows you to define key, value and optionally the Map type. uses a double linked list and a ```std::unordered_map``` style container to provide fast insert, delete and update.
 
-No dependencies other than the C++ standard library. This is a C++11 remake of my earlier LRUCache project (https://github.com/mohaps/lrucache)
+No dependencies other than the C++ standard library. This is a C++17 fork of the old LRUCache11 library.
 
 The goal was to create a fast LRUCache header only library and to avoid any dependencies like boost.
 
@@ -13,12 +13,12 @@ Enjoy and drop me a line.
 Usage Example
 ---------------
 ```cpp
-#include "LRUCache11.hpp"
+#include "LRUCache17.hpp"
 namespace lru
 {
 	void test()
 	{
-		lru11::Cache<std::string, std::string> cache(3,0);
+		lru17::Cache<std::string, std::string> cache(3,0);
 		cache.insert("hello", "world");
 		cache.insert("foo", "bar");
 		
@@ -35,12 +35,7 @@ int main(int argc, char **argv)
 }
 ```
 
-Build with ```g++ -o sample_main -std=c++11 SampleMain.cpp```
-
-Note: for older gcc versions like 4.8, 5.0 etc.
-
-add ```-lpthread``` to the compilation line (as suggested by @ekg via https://github.com/mohaps/lrucache11/pull/3
-
+Build with ```g++ -o sample_main -std=c++17 SampleMain.cpp```
 
 License
 -------
@@ -76,13 +71,7 @@ BSD License
  */
 ```
 
-
-Comments/Crits
----------------
-
-Please contact author at mohaps@gmail.com
-
 Links
 --------
 * Wikipedia Entry on LRU Caching : http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used
-* Earlier version of the library : https://github.com/mohaps/lrucache
+* LRUCache11 - the library that LRUCache17 based on : https://github.com/mohaps/lrucache11
