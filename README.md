@@ -1,7 +1,7 @@
 LRUCache17
 ==========
 
-A header only C++17 LRU Cache template class that allows you to define key, value and optionally the Map type. uses a double linked list and a ```std::unordered_map``` style container to provide fast insert, delete and update.
+A header only C++17 LRU Cache template class that allows you to define key, value and optionally the Map type. uses a double linked list and a ```std::unordered_map``` style container to provide fast insert, delete and update. It also comes with a timed cache that invalidates entries after a set amount of time.
 
 No dependencies other than the C++ standard library. This is a C++17 fork of the old LRUCache11 library.
 
@@ -44,18 +44,18 @@ BSD License
 
 ```
 /*
- * LRUCache11 - a templated C++11 based LRU cache class that allows specification of
+ * LRUCache17 - a templated C++17 based LRU cache class that allows specification of
  * key, value and optionally the map container type (defaults to std::unordered_map)
  * By using the std::map and a linked list of keys it allows O(1) insert, delete and
  * refresh operations.
  *
  * This is a header-only library and all you need is the LRUCache11.hpp file
  *
- * Github: https://github.com/mohaps/lrucache11
+ * Github: https://github.com/marty1885/lrucache17
  *
- * This is a follow-up to the LRUCache project - https://github.com/mohaps/lrucache
  *
  * Copyright (c) 2012-22 SAURAV MOHAPATRA <mohaps@gmail.com>
+ * Copyright (c) 2020 MARTIN CHANG <marty188586@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

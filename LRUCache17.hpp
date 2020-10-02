@@ -5,6 +5,7 @@
 #include <shared_mutex>
 #include <stdexcept>
 #include <thread>
+#include <optional>
 #include <unordered_map>
 
 namespace lru17 {
@@ -34,7 +35,8 @@ struct KeyValuePair {
   K key;
   V value;
 
-  KeyValuePair(K k, V v) : key(std::move(k)), value(std::move(v)) {}
+  KeyValuePair(K k, V v) : key(std::move(k)), value(std::move(v)) {
+  }
 };
 
 /**
@@ -98,15 +100,14 @@ class Cache {
     cache_[k] = keys_.begin();
     prune();
   }
-  bool tryGet(const Key& kIn, Value& vOut) {
+  std::optional<Value> tryGet(const Key& kIn) {
     ReadGuard g(lock_);
     const auto iter = cache_.find(kIn);
     if (iter == cache_.end()) {
-      return false;
+      return {};
     }
     keys_.splice(keys_.begin(), keys_, iter->second);
-    vOut = iter->second->value;
-    return true;
+    return iter->second->value;
   }
   /**
    *	The const reference returned here is only
@@ -133,7 +134,7 @@ class Cache {
     if (iter == cache_.end()) {
       return false;
     }
-    keys_.erase(iter->second);
+    // keys_.erase(iter->second);
     cache_.erase(iter);
     return true;
   }
