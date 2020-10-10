@@ -43,7 +43,12 @@ public:
     return value;
   }
   Value getCopy(const Key& k) {
-    return get(k);
+    const auto [value, time] = cache_.get(k);
+    if(Clock::now()-time > timeToLive_) {
+      remove(k);
+      throw KeyNotFound();
+    }
+    return value;
   }
   size_t getMaxSize() const { return cache_.getMaxSize(); }
   size_t getElasticity() const { return cache_.getElasticity(); }
